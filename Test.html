@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'ImageMap BBCode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #image-container {
+            position: relative;
+            border: 1px solid #ccc;
+            display: inline-block;
+        }
+        #image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .selection {
+            position: absolute;
+            border: 2px dashed red;
+            pointer-events: none;
+        }
+        #bbcode-output {
+            width: 80%;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Générateur d'ImageMap BBCode</h1>
+
+<div id="image-container">
+    <img id="image" src="https://image.noelshack.com/fichiers/2024/30/3/1721818285-gs7fop-biaa0mdf.jpeg" alt="Image à annoter">
+</div>
+
+<div>
+    <label>URL du lien : <input type="text" id="link-url"></label>
+    <label>Nom : <input type="text" id="link-name"></label>
+    <button onclick="addSelection()">Ajouter la sélection</button>
+</div>
+
+<pre id="bbcode-output"></pre>
+
+<script>
+    const image = document.getElementById('image');
+    const container = document.getElementById('image-container');
+    const bbcodeOutput = document.getElementById('bbcode-output');
+    let startX, startY, endX, endY;
+    const selections = [];
+
+    image.addEventListener('mousedown', (e) => {
+        const rect = image.getBoundingClientRect();
+        startX = ((e.clientX - rect.left) / rect.width) * 100;
+        startY = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const selectionDiv = document.createElement('div');
+        selectionDiv.className = 'selection';
+        selectionDiv.style.left = `${startX}%`;
+        selectionDiv.style.top = `${startY}%`;
+        container.appendChild(selectionDiv);
+
+        function onMouseMove(event) {
+            endX = ((event.clientX - rect.left) / rect.width) * 100;
+            endY = ((event.clientY - rect.top) / rect.height) * 100;
+
+            selectionDiv.style.width = `${endX - startX}%`;
+            selectionDiv.style.height = `${endY - startY}%`;
+        }
+
+        function onMouseUp() {
+            image.removeEventListener('mousemove', onMouseMove);
+            image.removeEventListener('mouseup', onMouseUp);
+        }
+
+        image.addEventListener('mousemove', onMouseMove);
+        image.addEventListener('mouseup', onMouseUp);
+    });
+
+    function addSelection() {
+        const url = document.getElementById('link-url').value;
+        const name = document.getElementById('link-name').value;
+        if (!url || !name || startX == null || startY == null || endX == null || endY == null) return;
+
+        const width = Math.abs(endX - startX);
+        const height = Math.abs(endY - startY);
+        const posX = Math.min(startX, endX);
+        const posY = Math.min(startY, endY);
+
+        selections.push(`${posX.toFixed(2)} ${posY.toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)} ${url} ${name}`);
+        updateBBCode();
+    }
+
+    function updateBBCode() {
+        let bbcode = `[imagemap]\n${image.src}\n`;
+        selections.forEach(selection => {
+            bbcode += `${selection}\n`;
+        });
+        bbcode += `[/imagemap]`;
+        bbcodeOutput.textContent = bbcode;
+    }
+</script>
+
+</body>
+</html>
