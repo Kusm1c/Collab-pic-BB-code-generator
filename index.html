@@ -41,7 +41,11 @@
 
 <h1>Générateur d'ImageMap BBCode</h1>
 
-<input type="file" id="image-upload" accept="image/*">
+<div>
+    <label>URL de l'image : <input type="text" id="image-url" placeholder="Entrez l'URL de l'image"></label>
+    <button onclick="loadImageFromUrl()">Charger l'image</button>
+</div>
+
 <div id="image-container">
     <img id="image" alt="Image à annoter" style="display: none;">
 </div>
@@ -56,24 +60,19 @@
 
 <script>
     const image = document.getElementById('image');
-    const imageUpload = document.getElementById('image-upload');
     const container = document.getElementById('image-container');
     const bbcodeOutput = document.getElementById('bbcode-output');
     let startX, startY, endX, endY;
     const selections = [];
 
-    imageUpload.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                image.src = e.target.result;
-                image.style.display = 'block';
-                resetSelections();
-            };
-            reader.readAsDataURL(file);
+    function loadImageFromUrl() {
+        const imageUrl = document.getElementById('image-url').value;
+        if (imageUrl) {
+            image.src = imageUrl;
+            image.style.display = 'block';
+            resetSelections();
         }
-    });
+    }
 
     image.addEventListener('mousedown', (e) => {
         e.preventDefault();  // Prevent default drag behavior
