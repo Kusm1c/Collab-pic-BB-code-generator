@@ -16,6 +16,7 @@
             position: relative;
             border: 1px solid #ccc;
             display: inline-block;
+            margin-top: 20px;
         }
         #image-container img {
             max-width: 100%;
@@ -38,8 +39,9 @@
 
 <h1>Générateur d'ImageMap BBCode</h1>
 
+<input type="file" id="image-upload" accept="image/*">
 <div id="image-container">
-    <img id="image" src="https://image.noelshack.com/fichiers/2024/30/3/1721818285-gs7fop-biaa0mdf.jpeg" alt="Image à annoter">
+    <img id="image" alt="Image à annoter" style="display: none;">
 </div>
 
 <div>
@@ -52,10 +54,24 @@
 
 <script>
     const image = document.getElementById('image');
+    const imageUpload = document.getElementById('image-upload');
     const container = document.getElementById('image-container');
     const bbcodeOutput = document.getElementById('bbcode-output');
     let startX, startY, endX, endY;
     const selections = [];
+
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                image.src = e.target.result;
+                image.style.display = 'block';
+                resetSelections();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     image.addEventListener('mousedown', (e) => {
         const rect = image.getBoundingClientRect();
@@ -106,6 +122,13 @@
         });
         bbcode += `[/imagemap]`;
         bbcodeOutput.textContent = bbcode;
+    }
+
+    function resetSelections() {
+        selections.length = 0;
+        bbcodeOutput.textContent = '';
+        const existingSelections = container.querySelectorAll('.selection');
+        existingSelections.forEach(selection => selection.remove());
     }
 </script>
 
